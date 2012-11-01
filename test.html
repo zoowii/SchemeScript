@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf8">
+    <title>Test SchemeScript</title>
+    <script type="text/javascript" src="./SchemeScript.browser.js"></script>
+    <style>
+        .content {
+            position: relative;
+            width: 1000px;
+            height: 700px;
+            left: 300px;
+            top: 0;
+        }
+
+        #codeArea {
+            position: relative;
+            width: 800px;
+            height: 700px;
+        }
+
+        #outputArea {
+            position: absolute;
+            min-width: 300px;
+            height: 700px;
+            left: 830px;
+        }
+    </style>
+</head>
+<body>
+<h1 align='center'>SchemeScript Online</h1>
+
+<h3 align='center'>Github: <a href="https://github.com/zoowii/SchemeScript">https://github.com/zoowii/SchemeScript</a>
+</h3>
+
+<div class="content">
+    <div class="controls">
+        <button id="runBtn">Run</button>
+    </div>
+    <textarea id="codeArea">
+
+    </textarea>
+    <textarea id="outputArea">
+
+    </textarea>
+</div>
+
+<script type="text/javascript">
+    var codeArea = document.getElementById("codeArea");
+    var outputArea = document.getElementById("outputArea");
+    var runBtn = document.getElementById("runBtn");
+    codeArea.value = ("(define a (+ 1 (+ 1234 890 549))) ; define a variable  \n        \
+                (display (* 1 2 3 4)) ; output 24                                  \n      \
+                (display (/ 100 2 3)); output 16.666666666666668                     \n     \
+                        (display 7 6) ; hello, world! this is a comment! output 7 6    \n    \
+                (display a) ; output 2674                                               \n    \
+                (display (< 1 2 3)) ; output true                                      \n      \
+                (display (< 3 1 2)) ; output false                                     \n       \
+                                                                                         \n      \
+                (define a 1) ; redefine a to 1                                             \n     \
+                (display 3 a) ; output 3 1                                                \n       \
+                                                                                           \n       \
+                (define b true)                                                            \n        \
+        (display false b) ; output false true                                                \n       \
+                                                                                                \n     \
+                (define c \"hello\")                                                             \n       \
+        (display c \"world\" \"every one!\") ; output hello world every one!                       \n        \
+                                                                                                     \n   \
+                (display (< 1 \"abc\" \"hello\") ; comment here                                        \n      \
+                (> \"hi\", \"every one\", 56)                                                            \n     \
+        (= 1 1 a)) ; output true true true                                                               \n  \
+                                                                                                           \n \
+                (display b (not b) (not true)) ; output true false false                                     \n\
+                                                                                  \n                            \
+        ; lambda expression definition                                              \n                           \
+                (define sum (lambda (a b c) (define d (+ a b c)) d))                  \n                          \
+        (display \"lambda sum\" (sum 1 2 3)) ; output lambda sum 6                      \n                           \
+                                                                                          \n                        \
+                (defn (add1 n) (define n (+ n 1)) n)                                        \n                       \
+        (defn (add2 n) (define n (add1 n)) (define n (add1 n)) n)                             \n                      \
+        (display (add2 5)) ; output 7                                                      \n                          \
+                                                                                             \n                         \
+                                                                                               \n                        \
+                (defn (fib n) ; define a fibonacci func                                          \n                       \
+                (if (= 1 n)                                                                        \n                      \
+        1                                                                                            \n                     \
+                (if (= 2 n)                                                                            \n                    \
+        1                                                                                                \n                   \
+                (+ (fib (- n 1))                                                                           \n                  \
+        (fib (- n 2))))))                                                                                    \n                 \
+        (display (fib 7)) ; output 13                                                                          \n                \
+                                                                                                                 \n               \
+        ; list, and nested list, and list-len, and n-th of list                                                    \n              \
+                (define l1 (list \"a\" 1 (list 2 3) (fib 13)))                            \n                                          \
+        (display l1) ; output [a,1,[2,3],233]                                               \n                                       \
+                (display (list-len l1)) ; output 4                                            \n                                      \
+                (display (n-th l1 3)) ; output 233                                              \n                                     \
+                                                                                                  \n                                    \
+        ; cons, car, cdr                                                                            \n                                   \
+                (define l2 (cons 2 3 (list 5 6 \"abc\") l1))                                          \n                                    \
+        (display l2) ; output [2,3,5,6,abc,a,1,[2,3],233]                                               \n                                 \
+                (display (car l2)) ; output 2                                                             \n                                \
+                (display (cdr l2)) ; output [3,5,6,abc,a,1,[2,3],233]                                       \n                               \
+                                                                                                              \n                              \
+        ; typeof                                                                                                \n                             \
+                (display (typeof l2)) ; output LIST                                                               \n                            \
+                                                                                                                    \n                           \
+        ; currying                                                                                                    \n                          \
+                (defn (f1 a b c) (+ a b c))                                                                             \n                         \
+        (define f2 (f1 1))                                                                                                \n                        \
+        (define f3 (f2 2))                                                                                                  \n                       \
+        (display f2) ; output [Function(2)(2)]                                                                                \n                      \
+                (display (f3 3)) ; output 6");
+
+    function run() {
+        var code = codeArea.value;
+        outputArea.value = '';
+        window.ss_eval(code, function (str) {
+            outputArea.value += (str + '\n');
+        }, function (str) {
+            outputArea.value += ('error: ' + str + '\n');
+        });
+    }
+
+    runBtn.onclick = run;
+    run();
+</script>
+</body>
+</html>

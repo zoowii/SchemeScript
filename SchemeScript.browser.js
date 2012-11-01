@@ -1,4 +1,4 @@
-var context = exports;  // if in browser, use window, else if in node.js, use exports
+var context = window;  // if in browser, use window, else if in node.js, use exports
 (function (context) {
     "use strict";
 
