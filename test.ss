@@ -14,7 +14,7 @@
 (define c "hello")
 (display c "world" "every one!") ; output hello world every one!
 
-(display (<  1 "abc" "hello")
+(display (<  1 "abc" "hello")  ; comment here
          (> "hi", "every one", 56)
          (= 1 1 a)) ; output true true true
 
@@ -22,3 +22,8 @@
 
 ; (define sum (# (a b c) (define d (+ a b c)) d)) ; lambda expression definition
 ; (display (sum 1 2 3)) ; output 6
+
+(defn (add1 n) (define n (+ n 1)) n)
+(defn (add2 n) (define n (add1 n)) (define n (add1 n)) n)
+(display (add2 5))
+
