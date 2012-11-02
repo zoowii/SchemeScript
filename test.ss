@@ -61,3 +61,18 @@
 (define f3 (f2 2))
 (display f2) ; output [Function(2)(2)]
 (display (f3 3)) ; output 6
+
+; more powerful +
+(display (+ "a" "b" 1 true)) ; output ab1true
+(display (+ true false)) ; output 1
+(display (+ true))  ; output true
+
+; cond
+(define a 1)
+(define b 2)
+(display (cond ((> a b) b)
+               ((= a b) a)
+               (else a))) ; output 1
+
+(display (cond (false "false")
+                (true "true"))) ; output true

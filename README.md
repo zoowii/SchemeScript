@@ -24,10 +24,16 @@ lambda表达式功能，以(lambda (a b c) (define d (+ a b c)) d)的形式定�
 放到网页中运行                                                             --2012/11/1
 
 
+****
+加强了 + 函数的能力，可以操作字符串，布尔值和数值              --2012/11/2
+添加了 cond 控制结构作为内置函数                             --2012/11/2
+说明：cons是把参数中的非列表作为一项加入，而如果参数是列表的话，就把参数中的每一项加入，不嵌套执行（即参数如果是列表，其中的列表也是作为一项加入），而list是把每一项参数作为新列表的一项加入。
+
 TODO:
 1. 惰性求值
 2. map, set
 3. 浮点数
+4. map, reduce, filter等函数
 
 
 已经放在网上，<a href="http://aboutzoowii.duapp.com/app/js/SchemeScript">Online Test</a>，可以在这个网页中运行

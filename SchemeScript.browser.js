@@ -559,13 +559,14 @@ var context = window;  // if in browser, use window, else if in node.js, use exp
         this.items = [
             new EnvItem('true', new SFormItem('true', TokenType.BOOLEAN)),
             new EnvItem('false', new SFormItem('false', TokenType.BOOLEAN)),
+            new EnvItem('else', new SFormItem('true', TokenType.BOOLEAN)),
             new EnvItem('newline', new SFormItem('\n', TokenType.STRING)),
             new EnvItem('nil', new SFormItem([], TokenType.LIST)),
             new EnvItem('+', new SFormItem(function (params) {
                 if (params.length <= 0) {
                     throwError("The + func accepts at least 1 parameter");
                 }
-                var sum = 0;
+                var sum = null;
                 for (var i = 0; i < params.length; i++) {
                     var sItem = params[i];
                     if (sItem instanceof  SForm) { // 如果是嵌套的form，递归执行
@@ -576,15 +577,41 @@ var context = window;  // if in browser, use window, else if in node.js, use exp
                             sItem = envTree.getIdentifierValue(sItem.value);
                         }
                         if (sItem.type === TokenType.NUM) {
-                            sum += sItem.numVal;
+                            if (sum === null) {
+                                sum = sItem.numVal;
+                            } else {
+                                sum += sItem.numVal;
+                            }
+                        } else if (sItem.type === TokenType.STRING) {
+                            if (sum === null) {
+                                sum = sItem.value;
+                            } else {
+                                sum += sItem.value;
+                            }
+                        } else if (sItem.type === TokenType.BOOLEAN) {
+                            if (sum === null) {
+                                sum = sItem.boolVal;
+                            } else {
+                                sum += sItem.boolVal;
+                            }
                         } else {
-                            throwError("This func only accepts number, but actually got " + sItem.value);
+                            throwError("This func only accepts number, string, and boolean value, but actually got " + sItem.value);
                         }
                     } else {
                         throwError("The item " + sItem + " is not valid SFormItem");
                     }
                 }
-                return new SFormItem(sum, TokenType.NUM);
+                var resultType = TokenType.NUM;
+                if (typeof(sum) === 'number') {
+                    resultType = TokenType.NUM;
+                } else if (typeof(sum) === 'boolean') {
+                    resultType = TokenType.BOOLEAN;
+                } else if (typeof(sum) === 'string') {
+                    resultType = TokenType.STRING;
+                } else {
+                    throwError('unsupported result type');
+                }
+                return new SFormItem(sum, resultType);
             }, TokenType.ORIGINAL_FUNC)),
             new EnvItem('*', new SFormItem(function (params) {
                 if (params.length <= 0) {
@@ -892,7 +919,7 @@ var context = window;  // if in browser, use window, else if in node.js, use exp
                     }
                 }
             }, TokenType.ORIGINAL_FUNC)) ,
-            new EnvItem('cons', new SFormItem(function (params) {
+            new EnvItem('cons', new SFormItem(function (params) { // TODO: now the cons is not the actual cons func in Scheme, it can accept more than 2 parameters
                 var list = [];
                 for (var i = 0; i < params.length; i++) {
                     var sItem = params[i];
@@ -971,6 +998,44 @@ var context = window;  // if in browser, use window, else if in node.js, use exp
                         throwError('only SFormItem or SForm accepted');
                     }
                 }
+            }, TokenType.ORIGINAL_FUNC)) ,
+            new EnvItem('cond', new SFormItem(function (params) {
+                if (params.length < 1) {
+                    throwError('This func at least accepts 1 parameter');
+                }
+                for (var i = 0; i < params.length; i++) {
+                    var fItem = params[i];
+                    if (fItem instanceof SForm) {
+                        if (fItem.size() <= 3) {
+                            throwError("this func's parameters must be forms which have at least 2 items");
+                        } else {
+                            var condItem = fItem.get(1);
+                            if (condItem instanceof SForm || (condItem instanceof SFormItem && condItem.type === TokenType.ID)) {
+                                var condVal = ss_eval_form_in_new_env(condItem);
+                                if (condVal.type === TokenType.BOOLEAN) {
+                                    if (condVal.boolVal === true) {
+                                        var formList = new SFormList();
+                                        for (var i = 2; i < fItem.size() - 1; i++) {
+                                            formList.push(fItem.get(i));
+                                        }
+                                        if (formList.size() <= 0) {
+                                            throwError('no body of this condition');
+                                        } else {
+                                            return ss_eval_forms_in_current_env(formList);
+                                        }
+                                    } else {
+                                        continue;
+                                    }
+                                } else {
+                                    throwError('only true or false condition accepted');
+                                }
+                            }
+                        }
+                    } else {
+                        throwError('this func only accepts forms as parameters');
+                    }
+                }
+                return new SFormItem('null', TokenType.NULL);
             }, TokenType.ORIGINAL_FUNC)) ,
             new EnvItem('if', new SFormItem(function (params) {
                 if (params.length < 2 || params.length > 3) {
@@ -1089,7 +1154,7 @@ var context = window;  // if in browser, use window, else if in node.js, use exp
                         throwError("The func's second parameter is of no sense");
                     }
                     envTree.curEnv.push(new EnvItem(nameItem.value, valueItem));
-                    return new SFormItem(undefined, TokenType.NULL);
+                    return new SFormItem('null', TokenType.NULL);
                 }
                 throwError("unknown parameters" + nameItem + 'and ' + valueItem);
             }, TokenType.ORIGINAL_FUNC)),
@@ -1102,12 +1167,7 @@ var context = window;  // if in browser, use window, else if in node.js, use exp
                     }
                     if (sItem instanceof SFormItem) {
                         if (sItem.type === TokenType.ID) {
-                            var item = envTree.curEnv.findIdentifier(sItem.value);
-                            if (item === null) {
-                                throwError('The identifier ' + sItem.value + " can't be found int env");
-                            } else {
-                                sItem = item;
-                            }
+                            sItem = envTree.getIdentifierValue(sItem.value);
                         }
                         if (i !== 0) {
                             str += ' ';
@@ -1116,7 +1176,7 @@ var context = window;  // if in browser, use window, else if in node.js, use exp
                     }
                 }
                 output(str);
-                return new SFormItem(undefined, TokenType.NULL);
+                return new SFormItem('null', TokenType.NULL);
             }, TokenType.ORIGINAL_FUNC))
         ];
         this.push = function (envItem) {
