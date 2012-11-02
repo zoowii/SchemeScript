@@ -199,7 +199,7 @@ var context = exports;  // if in browser, use window, else if in node.js, use ex
     };
 
     var StrStream = function (source) { // 字符流类
-        this.source = source + ' '; // 使得最后至少有一个空白符
+        this.source = source + '\n'; // 使得最后至少有一个空白符，使用\n是为了让最后的注释（如果有的话）被识别
         this.cur = 0;
         this.size = this.source.length; // count of rest chars
         this.shift = function () {
